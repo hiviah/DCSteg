@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<project name="DCSteg" default="all" basedir=".">
+
+     <!-- Directory settings -->
+     <property name="src" value="src"/>
+     <property name="build" value="bin"/>
+     <property name="javadoc" value="javadoc"/>
+     <property name="jarfile" value="DCSteg.jar"/>
+
+     <!-- Initialization -->
+     <target name="init"> 
+          <mkdir dir="${build}"/>
+     </target>
+
+     <!-- Compile target -->
+     <target name="compile" depends="init">
+          <javac debug="true" srcdir="${src}" destdir="${build}"/>
+     </target>
+
+    <!-- Jar creation target -->
+    <target depends="init,compile" name="jar">
+        <jar basedir="${build}" compress="true" jarfile="${jarfile}" manifest="DCSteg.mf"/>
+    </target>
+
+    <!-- "All" metatarget -->
+    <target depends="init,jar" description="Build classes and jar." name="all">
+        <echo message="DCSteg built. Run 'java -jar ${jarfile}' to see the usage. Run 'ant javadoc' to generate documentation."/>
+    </target>
+
+    <!-- Javadoc generation -->
+    <target depends="init" description="Javadoc for DCSteg." name="javadoc">
+        <mkdir dir="${javadoc}"/>
+        <javadoc destdir="${javadoc}" packagenames="Stegano" private="true">
+            <sourcepath>
+                <pathelement location="${src}"/>
+            </sourcepath>
+        </javadoc>
+    </target>
+
+    <!-- Clean -->
+    <target description="Clean all build products." name="clean">
+	<delete file="${jarfile}"/>
+	<delete dir="${build}"/>
+        <delete dir="${javadoc}"/>
+    </target>
+
+</project>

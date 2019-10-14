@@ -1,0 +1,107 @@
+CONTENTS
+1. About DCSteg
+2. Building
+3. Using
+4. The algorithm of watermarking
+5. License
+
+##################################################
+1. About DCSteg
+##################################################
+
+DCSteg is steganographic/watermarking utility that can imprint ASCII strings into
+image files (jpg, png). Ouput format is png.
+
+The approach is to embed the message data in the frequency domain. Some
+measures such as choosing low frequencies and using error-correcting codes make
+the message somewhat resistant to minor local image modifications (blur,
+drawing into the image, etc.). Resizing/cropping the image makes the message
+illegible, though.
+
+There are three possible "strength of imprints" to choose from (0-2). The
+higher the number, the more durable and visible the imprint is (2 is visible
+with bare eye, but for someone not looking for hidden text could be attributed
+to JPEG artifacts).
+
+There is limitation for the message to be only ASCII characters (program could be
+fairly easily modified to support Unicode characters, though).
+
+See the algorithm section for further details.
+
+WARNING: this is just a toy program, careful statistical analysis of the histogram
+would probably reveal that there is a hidden image. See http://niels.xtdnet.nl/stego/ and 
+http://www.citi.umich.edu/u/provos/papers/defending.ps for details on steganalysis.
+Use of PRNG to choose the blocks and order of imprint should make it more resilient
+to steganalysis (PRNG would use key/passphrase to derive seed).
+
+WARNING: in some countries this program might be illegal.
+
+
+##################################################
+2. Building
+##################################################
+
+In the DCSteg directory, run 'ant'. It builds the class files and the
+DCSteg.jar file. Run 'ant javadoc' to get javadoc.
+
+Alternatively you could import the code into IDE like Eclipse and build it
+there. The code has no dependencies except the standard JDK version >= 1.4,
+also works under 6.0.
+
+
+##################################################
+3. Using
+##################################################
+
+Run 'java -jar DCSteg.jar' to see the usage. Examples of usage:
+
+Analysis example (run this first):
+java -jar DCSteg.jar a input_image.jpg
+
+The output of analysis might look like (numbers 0-2 on the left say
+how many bytes are available for that given imprint strength):
+
+Analyzing image, it may take a while if the image is large
+0: 3952 bits, after encoding 278 bytes available for the message
+1: 3616 bits, after encoding 254 bytes available for the message
+2: 2128 bits, after encoding 148 bytes available for the message
+
+Encoding example:
+java -jar DCSteg.jar e input_image.jpg 0 output_image.png "This is the message"
+
+Decoding example:
+java -jar DCSteg.jar d imprinted_image.jpg 0
+
+
+##################################################
+4. The algorithm of watermarking
+##################################################
+
+First, image is converted from RGB colorspace to YCbCr colorspace. Then it is
+split in blocks of 8x8 pixels, each block is transformed using DCT into
+frequency domain and quantized (note the similarity to JPEG).
+
+DC coefficients are used to carry the message bits. A coefficient must be large
+enough to hold the message bit, that means at least one higher bit has to be
+set than the imprint bit order (imprint strength).
+
+Embedding iterates top to bottom, left to right. Thus if the image is modified
+so that a block capable of holding message bit is created/removed, rest of the
+bits in the message are shifted and thus illegible for human.
+
+Before the message itself is embedded, it is encoded using the Hamming(7,4)
+error-correcting code with 7-bit codewords encoding 4 bits of message. Each
+code word can correct single-bit error (multiple-bit errors in a single codeword
+cannot be detected).
+
+Decoding is just the encoding process in reverse, except the Hamming code is used
+to correct errors if found.
+
+
+##################################################
+5. License
+##################################################
+
+License: GPL v2 (see http://www.gnu.org/licenses/old-licenses/gpl-2.0.html)
+Author: Ondrej Mikle (ondrej.mikle \at gmail.com)
+
